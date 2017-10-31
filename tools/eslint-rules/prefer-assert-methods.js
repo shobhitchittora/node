@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Prohibit the use of assert operators ( ===, !==, ==, != )
+ */
+
 'use strict';
 
 function isAssert(node) {
@@ -30,7 +34,20 @@ module.exports = function(context) {
         if (arg && arg.type === 'BinaryExpression') {
           const assertMethod = preferedAssertMethod[arg.operator];
           if (assertMethod) {
-            context.report(node, parseError(assertMethod, arg.operator));
+            context.report({
+              node,
+              message: parseError(assertMethod, arg.operator),
+              fix: (fixer) => {
+                const sourceCode = context.getSourceCode();
+                const left = sourceCode.getText(arg.left);
+                const right = sourceCode.getText(arg.right);
+
+                return fixer.replaceText(
+                  node,
+                  `assert.${assertMethod}(${left}, ${right})`
+                );
+              }
+            });
           }
         }
       }
