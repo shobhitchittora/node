@@ -70,7 +70,16 @@ module.exports = function(context) {
 
   function report(nodes) {
     nodes.forEach((node) => {
-      context.report(node, msg);
+      context.report({
+        node,
+        message: msg,
+        fix: (fixer) => {
+          return fixer.insertTextAfter(
+            node,
+            '\n\nif (!common.hasCrypto)\n\tcommon.skip("missing crypto");'
+          );
+        }
+      });
     });
   }
 
